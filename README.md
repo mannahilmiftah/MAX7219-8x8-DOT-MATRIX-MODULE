@@ -23,6 +23,7 @@ a large number of LEDs with fewer pins is called Multiplexing. A convenient 3-wi
 The aim of the project is to connect an Arduino Uno board to an 8x8 LED matrix so that it can display information. Three of the fourteen digital input/output pins on the Arduino board are used to control the display driver MAX7219 IC. The three pins on the
 MAX7219 IC are used to provide clock (CLK), data input (DIN), and chip select (CS/Load). DIN (module pin) accepts serial data from a microcontroller or Arduino board. When the serial data is sent from the Arduino, it is converted into segments and
 digits to drive the columns and rows of the LED matrix. The data sent from the module confirms that the corresponding LEDs on the matrix light up and display the message on the module.
+
 <img width="773" height="292" alt="image" src="https://github.com/user-attachments/assets/004867a4-945d-4e5c-acbc-8a6d7a731b5f" />
 
 ## OUTPUT (watch Output Video to see complete output)
