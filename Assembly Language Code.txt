@@ -1,0 +1,285 @@
+;------------------------
+; Assembly Code
+;------------------------
+#define __SFR_OFFSET 0x00
+#include "avr/io.h"
+;------------------------
+.global SPI_MAX7219_init
+.global MAX7219_disp_digits
+;==============================================================
+SPI_MAX7219_init:
+;------------
+.equ  SCK, 5
+.equ  MOSI, 3
+.equ  SS, 2
+;--------------------------------------------------------------
+    LDI   R17, (1<<MOSI)|(1<<SCK)|(1<<SS)
+    OUT   DDRB, R17       ;set MOSI, SCK, SS as o/p
+    ;--------------------------------------------------------
+    LDI   R17, (1<<SPE)|(1<<MSTR)|(1<<SPR0)
+    OUT   SPCR, R17       ;enable SPI as master, fsck=fosc/16
+    ;--------------------------------------------------------
+    LDI   R17, 0x0A       ;segment intensity (0 to 15)
+    LDI   R18, 0          ;intensity level = 2    
+    RCALL send_bytes      ;send command & data to MAX7219
+    ;--------------------------------------------------------
+    LDI   R17, 0x09       ;decoding mode command
+    LDI   R18, 0x00       ;decoding off
+    RCALL send_bytes      ;send command & data to MAX7219
+    ;--------------------------------------------------------
+    LDI   R17, 0x0B       ;scan limit command
+    LDI   R18, 0x07       ;8 digits connected to MAX7219
+    RCALL send_bytes      ;send command & data to MAX7219
+    ;--------------------------------------------------------
+    LDI   R17, 0x0C       ;turn ON/OFF command
+    LDI   R18, 0x01       ;turn ON MAX7219
+    RCALL send_bytes      ;send command & data to MAX7219
+    ;--------------------------------------------------------
+    RET
+;==============================================================
+send_bytes:
+;----------
+    CBI   PORTB, SS       ;enable slave device MAX7219
+    ;--------------------------------------------------------
+    OUT   SPDR, R17       ;transmit command
+    ;--------------------------------------------------------
+l1: IN    R19, SPSR
+    SBRS  R19, SPIF       ;wait for byte transmission
+    RJMP  l1              ;to complete
+    ;--------------------------------------------------------
+    OUT   SPDR, R18       ;transmit data
+    ;--------------------------------------------------------
+l2: IN    R19, SPSR
+    SBRS  R19, SPIF       ;wait for byte transmission
+    RJMP  l2              ;to complete
+    ;--------------------------------------------------------
+    SBI   PORTB, SS       ;disable slave device MAX7219
+    RET
+;==============================================================
+my_delay:
+;--------
+    LDI   R21, 255
+l3: LDI   R22, 255
+l4: LDI   R23, 100
+l5: DEC   R23
+    BRNE  l5
+    DEC   R22
+    BRNE  l4
+    DEC   R21
+    BRNE  l3
+    RET
+;==============================================================
+MAX7219_disp_digits:
+;--------------------
+    RCALL disp_digit0
+    RCALL my_delay
+    RCALL disp_digit1
+    RCALL my_delay
+    RCALL disp_digit2
+    RCALL my_delay
+    RCALL disp_digit3
+    RCALL my_delay
+    RCALL disp_digit4
+    RCALL my_delay
+    RCALL disp_digit5
+    RCALL my_delay
+    RCALL disp_digit6
+    RCALL my_delay
+    RCALL disp_digit7
+    RCALL my_delay
+    RCALL disp_digit8
+    RCALL my_delay
+    RCALL disp_digit9
+    RCALL my_delay
+    ;------------------------
+    RJMP  MAX7219_disp_digits
+;==============================================================
+disp_digit0:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit0)
+    LDI   ZH, hi8(digit0)
+    LDI   R19, 8
+l6: LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex1
+    DEC   R19
+    BRNE  l6
+ex1:RET
+;-------------------------------------------------------------
+digit0:
+.byte 0b00000000,0b00011000,0b00100100,0b00100100
+.byte 0b00100100,0b00100100,0b00011000,0b00000000
+;==============================================================
+disp_digit1:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit1)
+    LDI   ZH, hi8(digit1)
+    LDI   R19, 8
+l7: LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex2
+    DEC   R19
+    BRNE  l7
+ex2:RET
+;-------------------------------------------------------------
+digit1:
+.byte 0b00000000,0b00001000,0b00011000,0b00001000
+.byte 0b00001000,0b00001000,0b00011100,0b00000000
+;==============================================================
+disp_digit2:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit2)
+    LDI   ZH, hi8(digit2)
+    LDI   R19, 8
+l8: LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex3
+    DEC   R19
+    BRNE  l8
+ex3:RET
+;-------------------------------------------------------------
+digit2:
+.byte 0b00000000,0b00011000,0b00100100,0b00001000
+.byte 0b00010000,0b00100000,0b00111100,0b00000000
+;==============================================================
+disp_digit3:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit3)
+    LDI   ZH, hi8(digit3)
+    LDI   R19, 8
+l9: LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex4
+    DEC   R19
+    BRNE  l9
+ex4:RET
+;-------------------------------------------------------------
+digit3:
+.byte 0b00000000,0b00111000,0b00000100,0b00111000
+.byte 0b00000100,0b00000100,0b00111000,0b00000000
+;==============================================================
+disp_digit4:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit4)
+    LDI   ZH, hi8(digit4)
+    LDI   R19, 8
+l10:LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex5
+    DEC   R19
+    BRNE  l10
+ex5:RET
+;-------------------------------------------------------------
+digit4:
+.byte 0b00000000,0b00000100,0b00001100,0b00010100
+.byte 0b00111100,0b00000100,0b00000100,0b00000000
+;==============================================================
+disp_digit5:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit5)
+    LDI   ZH, hi8(digit5)
+    LDI   R19, 8
+l11:LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex6
+    DEC   R19
+    BRNE  l11
+ex6:RET
+;-------------------------------------------------------------
+digit5:
+.byte 0b00000000,0b00111100,0b00100000,0b00111000
+.byte 0b00000100,0b00000100,0b00111000,0b00000000
+;==============================================================
+disp_digit6:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit6)
+    LDI   ZH, hi8(digit6)
+    LDI   R19, 8
+l12:LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex7
+    DEC   R19
+    BRNE  l12
+ex7:RET
+;-------------------------------------------------------------
+digit6:
+.byte 0b00000000,0b00011000,0b00100100,0b00111000
+.byte 0b00100100,0b00100100,0b00011000,0b00000000
+;==============================================================
+disp_digit7:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit7)
+    LDI   ZH, hi8(digit7)
+    LDI   R19, 8
+l13:LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex8
+    DEC   R19
+    BRNE  l13
+ex8:RET
+;-------------------------------------------------------------
+digit7:
+.byte 0b00000000,0b00111100,0b00000100,0b00001000
+.byte 0b00010000,0b00100000,0b00100000,0b00000000
+;==============================================================
+disp_digit8:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit8)
+    LDI   ZH, hi8(digit8)
+    LDI   R19, 8
+l14:LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  ex9
+    DEC   R19
+    BRNE  l14
+ex9:RET
+;-------------------------------------------------------------
+digit8:
+.byte 0b00000000,0b00011000,0b00100100,0b00011000
+.byte 0b00100100,0b00100100,0b00011000,0b00000000
+;==============================================================
+disp_digit9:
+;-----------
+    LDI   R17, 0x01
+    LDI   ZL, lo8(digit9)
+    LDI   ZH, hi8(digit9)
+    LDI   R19, 8
+l15:LPM   R18, Z+
+    RCALL send_bytes
+    INC   R17
+    CPI   R17, 9
+    BRPL  e10
+    DEC   R19
+    BRNE  l15
+e10:RET
+;-------------------------------------------------------------
+digit9:
+.byte 0b00000000,0b00011000,0b00100100,0b00100100
+.byte 0b00011100,0b00100100,0b00011000,0b00000000
